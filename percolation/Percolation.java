@@ -15,6 +15,9 @@ public class Percolation {
     private int numOpenSites;
 
     public Percolation(int n) {
+        if (n <= 0) {
+            throw new IllegalArgumentException();
+        }
         this.n = n;
         quPerc = new WeightedQuickUnionUF((n * n) + 2);
         quFull = new WeightedQuickUnionUF((n * n) + 1);
@@ -22,6 +25,10 @@ public class Percolation {
     }
 
     public void open(int row, int col) {
+
+        if (row > n || col > n) {
+            throw new IllegalArgumentException();
+        }
         numOpenSites++;
         int oneDimensionalIndex = getOneDimensionalIndex(row, col);
         openSite[oneDimensionalIndex] = true;
@@ -49,11 +56,17 @@ public class Percolation {
     }
 
     public boolean isOpen(int row, int col) {
+        if (row > n || col > n) {
+            throw new IllegalArgumentException();
+        }
         int oneDimensionalIndex = getOneDimensionalIndex(row, col);
         return openSite[oneDimensionalIndex];
     }
 
     public boolean isFull(int row, int col) {
+        if (row > n || col > n) {
+            throw new IllegalArgumentException();
+        }
         int oneDimensionalIndex = getOneDimensionalIndex(row, col);
         // Check if connected to top-virtual
         return quFull.connected(oneDimensionalIndex, (n * n));
