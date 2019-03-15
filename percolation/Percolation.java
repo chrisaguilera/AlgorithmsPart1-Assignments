@@ -1,16 +1,16 @@
 /* *****************************************************************************
  *  Name: Christopher Aguilera
  *  Date: March 13, 2019
- *  Description:
+ *  Description: Models a percolation system.
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
 
-    private int n;
-    private WeightedQuickUnionUF quPerc;
-    private WeightedQuickUnionUF quFull;
+    private final int n;
+    private final WeightedQuickUnionUF quPerc;
+    private final WeightedQuickUnionUF quFull;
     private boolean[] openSite;
     private int numOpenSites;
 
@@ -22,41 +22,49 @@ public class Percolation {
         quPerc = new WeightedQuickUnionUF((n * n) + 2);
         quFull = new WeightedQuickUnionUF((n * n) + 1);
         openSite = new boolean[n * n];
+        numOpenSites = 0;
     }
 
     public void open(int row, int col) {
 
-        if (row > n || col > n) {
+        if (row > n || col > n || row < 1 || col < 1) {
             throw new IllegalArgumentException();
         }
-        numOpenSites++;
-        int oneDimensionalIndex = getOneDimensionalIndex(row, col);
-        openSite[oneDimensionalIndex] = true;
-        int[] neighbors = neighbors(row, col);
-        for (int neighbor : neighbors) {
-            // Neighbor is top-virtual
-            if (neighbor == (n * n)) {
-                quPerc.union(oneDimensionalIndex, neighbor);
-                quFull.union(oneDimensionalIndex, neighbor);
-            }
-            // Neighbor is bottom-virtual
-            else if (neighbor == (n * n) + 1) {
-                quPerc.union(oneDimensionalIndex, neighbor);
-            }
-            else {
-                int nRow = getRow(neighbor);
-                int nCol = getCol(neighbor);
-                if (isOpen(nRow, nCol)) {
+
+        if (!isOpen(row, col)) {
+            numOpenSites += 1;
+            int oneDimensionalIndex = getOneDimensionalIndex(row, col);
+            openSite[oneDimensionalIndex] = true;
+            int[] neighbors = neighbors(row, col);
+            // For-loop is upper-bound constant - O(1)
+            // Max number of nieghbors for any site is 4
+            for (int neighbor : neighbors) {
+                // Neighbor is top-virtual
+                if (neighbor == (n * n)) {
                     quPerc.union(oneDimensionalIndex, neighbor);
                     quFull.union(oneDimensionalIndex, neighbor);
                 }
+                // Neighbor is bottom-virtual
+                else if (neighbor == (n * n) + 1) {
+                    quPerc.union(oneDimensionalIndex, neighbor);
+                }
+                else {
+                    int nRow = getRow(neighbor);
+                    int nCol = getCol(neighbor);
+                    if (isOpen(nRow, nCol)) {
+                        quPerc.union(oneDimensionalIndex, neighbor);
+                        quFull.union(oneDimensionalIndex, neighbor);
+                    }
+                }
+
             }
 
         }
+
     }
 
     public boolean isOpen(int row, int col) {
-        if (row > n || col > n) {
+        if (row > n || col > n || row < 1 || col < 1) {
             throw new IllegalArgumentException();
         }
         int oneDimensionalIndex = getOneDimensionalIndex(row, col);
@@ -64,7 +72,7 @@ public class Percolation {
     }
 
     public boolean isFull(int row, int col) {
-        if (row > n || col > n) {
+        if (row > n || col > n || row < 1 || col < 1) {
             throw new IllegalArgumentException();
         }
         int oneDimensionalIndex = getOneDimensionalIndex(row, col);
@@ -83,6 +91,12 @@ public class Percolation {
 
     private int[] neighbors(int row, int col) {
         int oneDimensionalIndex = getOneDimensionalIndex(row, col);
+        // Special case with 1x1 grid
+        if (n == 1) {
+            // Top-virtual and bottom-virtual
+            int[] neighborArray = { (n * n), (n * n) + 1 };
+            return neighborArray;
+        }
         // Top Row
         if (oneDimensionalIndex < n) {
             // Top-Left Corner
